@@ -43,7 +43,9 @@ TUFT_CNT = 12
 FLOWER_CNT = 10
 
 FILE_PATH = os.path.dirname(os.path.abspath(__file__))
-print(FILE_PATH)
+
+
+# データ保存ダイアログクラス
 class SaveDialog():
     def __init__(self, title, txt, size, obj_list):
         print('pop up calss init')
@@ -74,13 +76,15 @@ class SaveDialog():
         print('Dialog Save')
         file_name = str(datetime.datetime.now())[0:10] + '.csv'
         w_txt = str(datetime.datetime.now())[0:10] + ','
+        # 3列*12株*10花すべて1列CSVで保存する
         for j in range(LINE_CNT):
             for k in range(TUFT_CNT):
                 for i in self.obj_list[j][k]:
+                    # i = {'btn':[button obj], 'lbl':[label obj]}
                     w_txt = w_txt + i['lbl'].text + ','
-                with open(FILE_PATH + '/' + file_name, 'w') as fp:
-                    fp.write(w_txt[:-1])
-                self.popup.dismiss()
+        with open(FILE_PATH + '/' + file_name, 'w') as fp:
+            fp.write(w_txt[:-1])
+        self.popup.dismiss()
 
     def popup_open(self, instance):
         print('popup open')
@@ -101,13 +105,18 @@ class ScrollApp(App):
 
     def app_close(self, instace):
         print('app_close')
+        # pythonの終了
+        # kivyのライフサイクルが働いているか不明
         sys.exit()
 
+    # メインのスクロール画面の更新
     def disp_change(self, instance):
         print('call disp change')
+        # 押下されたボタンが列切り替え
         if instance.id.split('_')[1] == '列':
             self.line = int(instance.id.split('_')[0])
             self.line_lbl.text = str(self.line) + '列目'
+        # 押下されたボタンが株切り替え
         elif instance.id.split('_')[1] == '株':
             self.tuft = int(instance.id.split('_')[0])
             self.tuft_lbl.text = str(self.tuft) + '株目'
@@ -121,12 +130,14 @@ class ScrollApp(App):
 
         # layout以下を削除
         self.layout.clear_widgets()
-        # 新規作成
+        # スクロールないのレイアウト再作成
         self.make_btn_layout()
 
+    # デバッグとかテスト用
     def btn_test(self, instance):
         print('test')
 
+    # スクロールないレイアウトの作成
     def make_btn_layout(self):
         print('make_btn_layout')
 
@@ -138,6 +149,7 @@ class ScrollApp(App):
             boxlayout.add_widget(self.obj_list[self.line - 1][self.tuft - 1][i]['lbl'])
             self.layout.add_widget(boxlayout)
 
+    # 列、株切り替え用のドロップダウンリスト作成
     def make_dropdownlist(self, cnt, unit):
         print('make dropdown list')
         dropdown = DropDown()
@@ -153,13 +165,17 @@ class ScrollApp(App):
             # on the dropdown. We'll pass the text of the button as the data of the
             # selection.
             # btn.bind(on_release=lambda btn: dropdown.select(btn.text))
+            # 切り替えボタンが押されたとき描画を更新
+            # ボタンのプロパティが渡されるので他の引数は不要(やりかたわからん)
             btn.bind(on_press=self.disp_change)
 
             # then add the button inside the dropdown
             dropdown.add_widget(btn)
         return dropdown
 
+    # ツールバー作成
     def make_actionbar(self):
+        # 保存ダイアログの作成
         self.pupupview = SaveDialog('保存ダイアログ', '保存しますか?',
                                     (WINDOW_WIDTH/2, WINDOW_HEIGHT/4),
                                     self.obj_list)
@@ -168,6 +184,8 @@ class ScrollApp(App):
         ap = ActionPrevious(title='Tool Bar', with_previous=False)
         actionview.add_widget(ap)
 
+        # 現在表示中の列、株番号をひょうじ
+        # ツールバーにラベルを置けなさそうなのでcallbackのないボタンで作成
         self.line_lbl = ActionButton(text=str(self.line) + '列目')
         self.line_lbl.bind(on_press=self.btn_test)
         actionview.add_widget(self.line_lbl)
@@ -175,6 +193,7 @@ class ScrollApp(App):
         self.tuft_lbl = ActionButton(text=str(self.tuft) + '株目')
         actionview.add_widget(self.tuft_lbl)
 
+        # 押し間違いのためにボタン一つ分開けていたが、使っていない
         """
         self.null_btn2 = ActionButton(text='')
         actionview.add_widget(self.null_btn2)
@@ -182,25 +201,32 @@ class ScrollApp(App):
         actionview.add_widget(self.null_btn3)
         """
 
+        # 保存ダイアログを表示するボタン
         self.abtn1 = ActionButton(text='保存')
+        # ダイアログ呼び出し
         self.abtn1.bind(on_press=self.pupupview.popup_open)
         actionview.add_widget(self.abtn1)
 
+        # 押し間違いのためにボタン一つ分開けていたが、使っていない
         """
         self.null_btn4 = ActionButton(text='')
         actionview.add_widget(self.null_btn4)
         """
 
+        # 列、株切り替え
         self.abtn2 = ActionButton(text="列変更")
         self.line_dropdown = self.make_dropdownlist(LINE_CNT, '列')
+        # ドロップダウンリスト呼び出し
         self.abtn2.bind(on_press=self.line_dropdown.open)
         actionview.add_widget(self.abtn2)
 
         self.abtn3 = ActionButton(text="株変更")
         self.tufu_dropdown = self.make_dropdownlist(TUFT_CNT, '株')
+        # ドロップダウンリスト呼び出し
         self.abtn3.bind(on_press=self.tufu_dropdown.open)
         actionview.add_widget(self.abtn3)
 
+        # 押し間違いのためにボタン一つ分開けていたが、使っていない
         """
         self.null_btn5 = ActionButton(text='')
         actionview.add_widget(self.null_btn5)
@@ -228,6 +254,7 @@ class ScrollApp(App):
                 isFile = True
                 break
         # ファイルがある場合は読み込み
+        # ファイルがない場合 or 一か月以上更新がなければすべて''で更新
         if isFile:
             with open(FILE_PATH + file_name, 'r') as fp:
                 r_txt = fp.read()
@@ -290,6 +317,8 @@ class ScrollApp(App):
                     btn.bind(on_press=self.change_state)
                     self.obj_list[j][k].append({'btn': btn, 'lbl': text})
 
+        # self.make_btn_layout()がかくにんできるまでしばらく残しておく
+        """
         for i in range(FLOWER_CNT):
             # 横並びのレイアウト表示
             boxlayout = BoxLayout(spacing=10, size_hint_y=None,
@@ -298,9 +327,9 @@ class ScrollApp(App):
             boxlayout.add_widget(self.obj_list[self.line - 1][self.tuft - 1][i]['btn'])
             boxlayout.add_widget(self.obj_list[self.line - 1][self.tuft - 1][i]['lbl'])
             self.layout.add_widget(boxlayout)
+        """
 
-
-#        self.make_btn_layout()
+        self.make_btn_layout()
 
         # スクロールビューの作成
         root = ScrollView(size_hint=(1, None),
