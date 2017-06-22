@@ -42,7 +42,8 @@ TUFT_CNT = 12
 # 花数
 FLOWER_CNT = 10
 
-
+FILE_PATH = os.path.dirname(os.path.abspath(__file__))
+print(FILE_PATH)
 class SaveDialog():
     def __init__(self, title, txt, size, obj_list):
         print('pop up calss init')
@@ -77,19 +78,17 @@ class SaveDialog():
             for k in range(TUFT_CNT):
                 for i in self.obj_list[j][k]:
                     w_txt = w_txt + i['lbl'].text + ','
-                with open('C:/Users/yuuma_000/' + file_name, 'w') as fp:
+                with open(FILE_PATH + '/' + file_name, 'w') as fp:
                     fp.write(w_txt[:-1])
                 self.popup.dismiss()
 
     def popup_open(self, instance):
         print('popup open')
-        print(type(instance))
         # ポップアップを開く
         self.popup.open()
 
     def popup_close(self, instance):
         print('popup close')
-        print(type(instance))
         # ポップアップを閉じる
         self.popup.dismiss()
 
@@ -130,7 +129,6 @@ class ScrollApp(App):
 
     def make_btn_layout(self):
         print('make_btn_layout')
-        print(self.line, self.tuft)
 
         for i in range(FLOWER_CNT):
             # 横並びのレイアウト表示
@@ -147,7 +145,6 @@ class ScrollApp(App):
             # When adding widgets, we need to specify the height manually
             # (disabling the size_hint_y) so the dropdown can calculate
             # the area it needs.
-            print('make button %d %s' % (index + 1, unit))
             btn = Button(text='%d %s' % (index + 1, unit),
                          size_hint_y=None, height=44,
                          id=str(index + 1) + '_' + unit)
@@ -224,7 +221,7 @@ class ScrollApp(App):
         file_name = str(d)[0:10] + '.csv'
         # とりあえず直近一か月探す
         for i in range(30):
-            if not os.path.isfile('C:/Users/yuuma_000/' + file_name):
+            if not os.path.isfile(FILE_PATH + file_name):
                 d = d - datetime.timedelta(days=1)
                 file_name = str(d)[0:10] + '.csv'
             else:
@@ -232,17 +229,13 @@ class ScrollApp(App):
                 break
         # ファイルがある場合は読み込み
         if isFile:
-            with open('C:/Users/yuuma_000/' + file_name, 'r') as fp:
+            with open(FILE_PATH + file_name, 'r') as fp:
                 r_txt = fp.read()
             for i, stat in enumerate(r_txt.split(',')[1:]):
                 load_line = int(i / (TUFT_CNT * FLOWER_CNT) % LINE_CNT)
                 load_tuft = int(i / (FLOWER_CNT) % TUFT_CNT)
                 load_flower = int(i % FLOWER_CNT)
-                if i < 10:
-                    print(stat)
-                    print(i, load_line, load_tuft)
                 self.last_data[load_line][load_tuft][load_flower] = stat
-            print(self.last_data[0][0])
 
     # テキストの状態を推移させる
     def change_state(self, src):
@@ -284,12 +277,13 @@ class ScrollApp(App):
             for k in range(TUFT_CNT):
                 for i in range(FLOWER_CNT):
                     # ボタンにidを割り当てる
-                    btn = Button(text=str(i + 1) + '花株', font_size=70,
+                    btn = Button(text=str(i + 1) + '花', font_size=70,
                                  size_hint_y=None, height=100, id='b_' + str(i + 1))
                     txt = self.last_data[j][k][i]
                     text = Label(text=txt,
                                  font_size=70, color=DEFAULT_COLOR,
-                                 outline_color=RED, shorten_from='center',
+                                 # kivy 1.9.1 だとshorten_fromが未対応なのでコメントアウト
+                                 # outline_color=RED, shorten_from='center',
                                  id='l_' + str(i + 1))
 
                     # ボタン押下時の関数を割り当てる
@@ -301,7 +295,6 @@ class ScrollApp(App):
             boxlayout = BoxLayout(spacing=10, size_hint_y=None,
                                   id='box')
             # 1行ごとにボタンとラベルを表示
-            print(self.obj_list[self.line - 1][self.tuft - 1][i]['btn'])
             boxlayout.add_widget(self.obj_list[self.line - 1][self.tuft - 1][i]['btn'])
             boxlayout.add_widget(self.obj_list[self.line - 1][self.tuft - 1][i]['lbl'])
             self.layout.add_widget(boxlayout)
