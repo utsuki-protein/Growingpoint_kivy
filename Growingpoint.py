@@ -141,12 +141,13 @@ class ScrollApp(App):
     def make_btn_layout(self):
         print('make_btn_layout')
 
+        box_obj = self.obj_list[self.line - 1][self.tuft - 1]
         for i in range(FLOWER_CNT):
             # 横並びのレイアウト表示
             boxlayout = BoxLayout(spacing=10, size_hint_y=None)
             # 1行ごとにボタンとラベルを表示
-            boxlayout.add_widget(self.obj_list[self.line - 1][self.tuft - 1][i]['btn'])
-            boxlayout.add_widget(self.obj_list[self.line - 1][self.tuft - 1][i]['lbl'])
+            boxlayout.add_widget(box_obj[i]['btn'])
+            boxlayout.add_widget(box_obj[i]['lbl'])
             self.layout.add_widget(boxlayout)
 
     # 列、株切り替え用のドロップダウンリスト作成
@@ -247,7 +248,8 @@ class ScrollApp(App):
         file_name = str(d)[0:10] + '.csv'
         # とりあえず直近一か月探す
         for i in range(30):
-            if not os.path.isfile(FILE_PATH + file_name):
+            print(FILE_PATH + '/' + file_name)
+            if not os.path.isfile(FILE_PATH + '/' + file_name):
                 d = d - datetime.timedelta(days=1)
                 file_name = str(d)[0:10] + '.csv'
             else:
@@ -256,7 +258,7 @@ class ScrollApp(App):
         # ファイルがある場合は読み込み
         # ファイルがない場合 or 一か月以上更新がなければすべて''で更新
         if isFile:
-            with open(FILE_PATH + file_name, 'r') as fp:
+            with open(FILE_PATH + '/' + file_name, 'r') as fp:
                 r_txt = fp.read()
             for i, stat in enumerate(r_txt.split(',')[1:]):
                 load_line = int(i / (TUFT_CNT * FLOWER_CNT) % LINE_CNT)
@@ -299,15 +301,14 @@ class ScrollApp(App):
         self.layout.bind(minimum_height=self.layout.setter('height'))
 
         # Gridlayoutに入れるボタンとラベルの作成
-        # いくつかわからないのでとりあえず定数だけボタン作成
         for j in range(LINE_CNT):
             for k in range(TUFT_CNT):
                 for i in range(FLOWER_CNT):
                     # ボタンにidを割り当てる
                     btn = Button(text=str(i + 1) + '花', font_size=70,
-                                 size_hint_y=None, height=100, id='b_' + str(i + 1))
-                    txt = self.last_data[j][k][i]
-                    text = Label(text=txt,
+                                 size_hint_y=None, height=100,
+                                 id='b_' + str(i + 1))
+                    text = Label(text=self.last_data[j][k][i],
                                  font_size=70, color=DEFAULT_COLOR,
                                  # kivy 1.9.1 だとshorten_fromが未対応なのでコメントアウト
                                  # outline_color=RED, shorten_from='center',
